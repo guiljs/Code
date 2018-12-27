@@ -30,61 +30,61 @@ namespace ConsoleApp5
         public static List<string> findSchedules(int workHours, int dayHours, string pattern)
         {
 
-            var possibleSchedules = new List<string>();
+            var results = new List<string>();
 
-            if ((workHours < 1 || workHours > 56) || (dayHours < 1 || dayHours > 8) || pattern.Length != 7)
+            var arr = pattern.ToArray();
+            //var arr = pattern.Select(x => x == '?' ? -1 : char.GetNumericValue(x)).ToArray();
+            var sum = pattern.Sum(x => x == '?' ? 0 : char.GetNumericValue(x));
+            var questionMarksCount = pattern.Count(x => x == '?');
+
+            var diff = workHours - sum;
+            //if (diff % questionMarksCount == 0)
+            //{
+            //    pattern.Replace('?', (char)(diff / workHours));
+            //}
+
+            var temp = pattern;
+
+            int[] indexesOfQuestionMark = pattern.Select((b, i) => b == '?' ? i : -1).Where(i => i != -1).ToArray();
+            int iCount = 0;
+            while (iCount <= dayHours)
             {
-                throw new Exception("Invalid constraint");
-            }
-
-            //var schedule = new int[7];
-
-            var patternSum = 0;
-
-            var countQuestionMark = 0;
-
-            var scheduleArr = pattern.ToCharArray();
-
-            foreach (var ch in scheduleArr)
-            {
-                if (ch != '?')
+                //sum = arr.Sum(x => x != '?' ? char.GetNumericValue(x) : 0);
+                //diff = workHours - sum;
+                //foreach (var item in arr.Reverse().Where(x => x == '?'))
+                foreach (var item in indexesOfQuestionMark)
                 {
-                    patternSum += int.Parse(ch.ToString());
+                    var dayDiff = diff > dayHours ? dayHours : diff;
+                    dayDiff = dayDiff - iCount < 0 ? 0 : dayDiff - iCount;
+
+                    arr[item] = char.Parse((dayDiff).ToString());
+
+                    sum = arr.Sum(x => x != '?' ? char.GetNumericValue(x) : 0);
+
+                    diff = workHours - sum;
+
+                    temp = String.Join("", arr);
+
+                    if (sum == workHours && arr.Count(x => x == '?') == 0)
+                    {
+                        results.Add(temp);
+                    }
+
+                    if (workHours > sum )
+                    {
+
+                    }
+
                 }
-                else
-                {
-                    countQuestionMark++;
-                }
+       
+                temp = pattern;
+                arr = pattern.ToArray();
+                iCount++;
+
+                //    iCount--;
             }
 
-            //Got the difference
-            var difference = workHours - patternSum;
-
-            if (difference <= dayHours)
-            {
-
-            }
-
-
-            //Reverse
-            Array.Reverse(scheduleArr);
-
-            foreach (var item in scheduleArr)
-            {
-                if (item == '?')
-                {
-                    scheduleArr[Array.IndexOf(scheduleArr, item)] = (dayHours - (difference % dayHours)).ToString().ToCharArray()[0];
-                    difference -= dayHours;
-                }
-            }
-
-            Array.Reverse(scheduleArr);
-
-
-            possibleSchedules.Add(string.Join("", scheduleArr));
-
-
-            return possibleSchedules;
+            return results.OrderBy(x => x).ToList();
         }
 
 
